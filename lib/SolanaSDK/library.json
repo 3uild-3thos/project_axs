@@ -1,0 +1,27 @@
+{
+  "name": "SolanaSDK",
+  "version": "0.0.1",
+  "description": "",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "authors": [
+    {
+      "name": "Saicharan",
+      "email": "",
+      "url": ""
+    },
+    {
+      "name": "Shrinath",
+      "email": "",
+      "url": ""
+    }
+  ],
+  "frameworks": ["arduino"],
+  "platforms": ["esp32"],
+  "license": "MIT",
+  "homepage": "",
+  "dependencies": {}
+}
