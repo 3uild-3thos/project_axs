@@ -2,7 +2,7 @@
 #define EPOCH_SCHEDULE_H
 
 #include <optional>
-#include "solana/public_key.h"
+#include "SolanaSDK/public_key.h"
 
 class EpochSchedule
 {

@@ -1,6 +1,7 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
 #include <Arduino.h>
-
-int myFunction(int, int);
+#include "SolanaSDK/transaction.h"
 
 void setup()
 {

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include "solana/public_key.h"
+#include "SolanaSDK/public_key.h"
 #include "clock.h"
 #include "epoch_schedule.h"
 #include "instructions.h"

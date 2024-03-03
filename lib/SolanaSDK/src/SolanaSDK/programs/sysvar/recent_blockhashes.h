@@ -2,7 +2,7 @@
 #define RECENT_BLOCKHASHES_H
 
 #include <optional>
-#include "solana/public_key.h"
+#include "SolanaSDK/public_key.h"
 
 class RecentBlockhashes
 {

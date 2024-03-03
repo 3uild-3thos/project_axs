@@ -2,7 +2,7 @@
 #define SLOT_HISTORY_H
 
 #include <optional>
-#include "solana/public_key.h"
+#include "SolanaSDK/public_key.h"
 
 class SlotHistory
 {
