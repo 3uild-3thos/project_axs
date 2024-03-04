@@ -136,7 +136,7 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
   params.add(transactionSerialized);
 
   // Create options object and add parameters
-  JsonObject options = doc.createNestedObject();
+  JsonObject options = doc.template add<JsonObject>();
   options["encoding"] = "base58";
   options["skipPreflight"] = sendOptions.skipPreflight;
   options["preflightCommitment"] = to_string(sendOptions.preflightCommitment);
