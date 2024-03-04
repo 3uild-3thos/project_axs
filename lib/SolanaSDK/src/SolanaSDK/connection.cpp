@@ -21,7 +21,7 @@ std::string to_string(Commitment commitment)
 
 String Connection::createRequestPayload(uint16_t id, const std::string &method, JsonObject &additionalParams)
 {
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<1024> doc;
   doc["id"] = id;
   doc["jsonrpc"] = "2.0";
   doc["method"] = method.c_str();
@@ -38,7 +38,7 @@ String Connection::createRequestPayload(uint16_t id, const std::string &method, 
 
 String Connection::createRequestPayload(uint16_t id, const std::string &method, JsonArray &additionalParams)
 {
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<1024> doc;
   doc["id"] = id;
   doc["jsonrpc"] = "2.0";
   doc["method"] = method.c_str();
@@ -144,6 +144,8 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
 
   // Add options object to the params array
   params.add(options);
+
+  Serial.println(params.size());
 
   // Create the request payload using createRequestPayload method
   String requestPayload = createRequestPayload(1, "sendTransaction", params);
