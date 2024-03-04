@@ -14,6 +14,7 @@ bool sendHttpRequest(const char *url, const String &requestData, String &respons
     {
       response = http.getString();
       http.end();
+      Serial.println(response);
       return true;
     }
     else
