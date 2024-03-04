@@ -145,7 +145,17 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
   // Add options object to the params array
   params.add(options);
 
-  Serial.println(params.size());
+  std::string encoding = params[1]["encoding"];
+  Serial.println(encoding.c_str());
+
+  bool skipPreflight = params[1]["skipPreflight"];
+  Serial.println(skipPreflight);
+
+  std::string preflightCommitment = params[1]["preflightCommitment"];
+  Serial.println(preflightCommitment.c_str());
+
+  int maxRetries = params[1]["maxRetries"];
+  Serial.println(maxRetries);
 
   // Create the request payload using createRequestPayload method
   String requestPayload = createRequestPayload(1, "sendTransaction", params);
