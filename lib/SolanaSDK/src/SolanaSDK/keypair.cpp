@@ -1,9 +1,11 @@
+#include <sodium.h>
 #include <sodium/crypto_sign_ed25519.h>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <cassert>
 #include <esp_random.h>
+#include <Arduino.h>
 #include "keypair.h"
 #include "base58.h"
 #include "public_key.h"
@@ -39,9 +41,23 @@ Keypair::~Keypair()
 }
 
 // Generate a new Keypair with a random seed
+// Generate a new Keypair with a random seed
 Keypair Keypair::generate()
 {
     std::vector<unsigned char> seed(SECRET_KEY_LEN);
-    esp_fill_random(&seed, SECRET_KEY_LEN);
+
+    // Fill the seed vector with random bytes one character at a time
+    for (size_t i = 0; i < seed.size(); ++i)
+    {
+        seed[i] = static_cast<unsigned char>(randombytes_random() % 256);
+    }
+
+    // Debugging: Print the size of the seed vector
+    Serial.print("Seed size: ");
+    Serial.println(seed.size());
+
+    // Ensure that the size of the seed vector matches SECRET_KEY_LEN
+    assert(seed.size() == SECRET_KEY_LEN);
+
     return Keypair(seed);
 }
