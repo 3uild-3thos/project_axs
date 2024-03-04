@@ -35,7 +35,7 @@ public:
     ~Keypair();
 
     // Generate a new Keypair with a random seed
-    Keypair generate();
+    static Keypair generate();
 };
 
 #endif // KEYPAIR_H
