@@ -36,6 +36,22 @@ String Connection::createRequestPayload(uint16_t id, const std::string &method, 
   return requestPayload;
 }
 
+String Connection::createRequestPayload(uint16_t id, const std::string &method, JsonArray &additionalParams)
+{
+  StaticJsonDocument<200> doc;
+  doc["id"] = id;
+  doc["jsonrpc"] = "2.0";
+  doc["method"] = method.c_str();
+
+  // Create a JsonArray for params
+  doc["params"] = additionalParams;
+
+  String requestPayload;
+  serializeJson(doc, requestPayload);
+  Serial.println(requestPayload);
+  return requestPayload;
+}
+
 Connection::Connection(std::string endpoint, Commitment commitment)
 {
   this->rpcEndpoint = endpoint;
@@ -48,7 +64,7 @@ Connection::Connection(std::string endpoint)
   this->commitment = Commitment::processed;
 }
 
-BlockhashWithExpiryBlockHeight Connection::getLatestBlockhash(Commitment commitment)
+BlockhashWithExpiryBlockHeight Connection::_getLatestBlockhash(Commitment commitment)
 {
   // Create a JSON document to hold the request payload
   DynamicJsonDocument doc(256);
@@ -58,7 +74,7 @@ BlockhashWithExpiryBlockHeight Connection::getLatestBlockhash(Commitment commitm
   params["commitment"] = to_string(commitment);
 
   // Create the request payload using createRequestPayload method
-  String requestPayload = createRequestPayload(34, "getLatestBlockhash", params);
+  String requestPayload = createRequestPayload(1, "getLatestBlockhash", params);
 
   // Send the HTTP request and get the response
   String response;
@@ -80,6 +96,13 @@ BlockhashWithExpiryBlockHeight Connection::getLatestBlockhash(Commitment commitm
     // Construct the BlockhashWithExpiryBlockHeight object
     BlockhashWithExpiryBlockHeight blockhashWithExpiryBlockHeight;
     blockhashWithExpiryBlockHeight.blockhash = blockhash;
+
+    // Check if the response contains lastValidBlockHeight
+    if (responseDoc["result"]["value"].containsKey("lastValidBlockHeight"))
+    {
+      uint64_t lastValidBlockHeight = responseDoc["result"]["value"]["lastValidBlockHeight"];
+      blockhashWithExpiryBlockHeight.lastValidBlockHeight = lastValidBlockHeight;
+    }
 
     return blockhashWithExpiryBlockHeight;
   }
@@ -90,47 +113,75 @@ BlockhashWithExpiryBlockHeight Connection::getLatestBlockhash(Commitment commitm
   }
 }
 
+BlockhashWithExpiryBlockHeight Connection::getLatestBlockhash(Commitment commitment)
+{
+  return _getLatestBlockhash(commitment);
+}
+
 BlockhashWithExpiryBlockHeight Connection::getLatestBlockhash()
+{
+  return _getLatestBlockhash(commitment);
+}
+
+Signature Connection::_sendTransaction(Transaction transaction, SendOptions sendOptions)
 {
   // Create a JSON document to hold the request payload
   DynamicJsonDocument doc(256);
-  JsonObject params = doc.to<JsonObject>();
+  JsonArray params = doc.to<JsonArray>();
 
-  // Add the commitment parameter to the params object
-  params["commitment"] = to_string(commitment);
+  JsonObject options = doc.to<JsonObject>();
+
+  // Add the encoding parameter to the options object
+  options["encoding"] = "base58";
+
+  // Add the skipPreflight parameter to the options object
+  options["skipPreflight"] = sendOptions.skipPreflight;
+
+  // Add the preflightCommitment parameter to the options object
+  options["preflightCommitment"] = to_string(sendOptions.preflightCommitment);
+
+  // Add the maxRetries parameter to the options object
+  options["maxRetries"] = sendOptions.maxRetires;
+
+  params.add(Base58::trimEncode(transaction.serialize()).c_str());
+
+  params.add(options);
 
   // Create the request payload using createRequestPayload method
-  String requestPayload = createRequestPayload(34, "getLatestBlockhash", params);
+  String requestPayload = createRequestPayload(1, "sendTransaction", params);
 
   // Send the HTTP request and get the response
   String response;
   if (sendHttpRequest(rpcEndpoint.c_str(), requestPayload, response))
   {
     // Parse the JSON response
-    DynamicJsonDocument responseDoc(512); // Adjust capacity as needed
+    DynamicJsonDocument responseDoc(128); // Adjust capacity as needed
     deserializeJson(responseDoc, response);
 
     // Extract the blockhash string from the response
-    const char *blockhashString = responseDoc["result"]["value"]["blockhash"];
+    const char *signatureString = responseDoc["result"];
+
+    std::vector<uint8_t> signatureBytes = Base58::trimDecode(signatureString);
 
     // Decode the blockhash string using Base58 decoding
-    std::vector<uint8_t> recentBlockhashBytes = Base58::trimDecode(blockhashString);
+    Signature signature = Signature::deserialize(signatureBytes);
 
-    // Construct the Hash object from the decoded bytes
-    Hash blockhash = Hash(recentBlockhashBytes);
-
-    uint64_t lastValidBlockHeight = responseDoc["result"]["value"]["lastValidBlockHeight"];
-
-    // Construct the BlockhashWithExpiryBlockHeight object
-    BlockhashWithExpiryBlockHeight blockhashWithExpiryBlockHeight;
-    blockhashWithExpiryBlockHeight.blockhash = blockhash;
-    blockhashWithExpiryBlockHeight.lastValidBlockHeight = lastValidBlockHeight;
-
-    return blockhashWithExpiryBlockHeight;
+    return signature;
   }
   else
   {
     // Throw an exception or handle the error as needed
     throw std::runtime_error("Request failed");
   }
+}
+
+Signature Connection::sendTransaction(Transaction transaction, SendOptions sendOptions)
+{
+  return _sendTransaction(transaction, sendOptions);
+}
+
+Signature Connection::sendTransaction(Transaction transaction)
+{
+  SendOptions defaultSendOptions;
+  return _sendTransaction(transaction, defaultSendOptions);
 }
