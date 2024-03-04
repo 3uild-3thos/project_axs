@@ -136,7 +136,7 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
   params.add(transactionSerialized);
 
   // Create options object and add parameters
-  JsonObject options = doc.template add<JsonObject>();
+  StaticJsonDocument<128> options;
   options["encoding"] = "base58";
   options["skipPreflight"] = sendOptions.skipPreflight;
   options["preflightCommitment"] = to_string(sendOptions.preflightCommitment);
@@ -144,19 +144,6 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
 
   // Add options object to the params array
   params.add(options);
-
-  // Retrieving values from the options object
-  std::string encoding = options["encoding"].as<const char *>();
-  Serial.println(encoding.c_str());
-
-  bool skipPreflight = options["skipPreflight"].as<bool>();
-  Serial.println(skipPreflight);
-
-  std::string preflightCommitment = options["preflightCommitment"].as<const char *>();
-  Serial.println(preflightCommitment.c_str());
-
-  int maxRetries = options["maxRetries"].as<int>();
-  Serial.println(maxRetries);
 
   // Create the request payload using createRequestPayload method
   String requestPayload = createRequestPayload(1, "sendTransaction", params);
