@@ -47,12 +47,9 @@ void Signature::verify(const std::vector<uint8_t> &pubkeyBytes, const std::vecto
 
 std::string Signature::toString() const
 {
-    std::ostringstream oss;
-    for (const auto &byte : value)
-    {
-        oss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte);
-    }
-    return oss.str();
+    std::vector<uint8_t> result;
+    std::copy(value.begin(), value.end(), std::back_inserter(result));
+    return Base58::trimEncode(result);
 }
 
 Signature Signature::fromString(const std::string &s)
