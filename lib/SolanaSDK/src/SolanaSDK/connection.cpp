@@ -126,25 +126,23 @@ BlockhashWithExpiryBlockHeight Connection::getLatestBlockhash()
 Signature Connection::_sendTransaction(Transaction transaction, SendOptions sendOptions)
 {
   // Create a JSON document to hold the request payload
-  DynamicJsonDocument doc(256);
-  JsonArray params = doc.to<JsonArray>();
+  DynamicJsonDocument doc(512);
 
-  JsonObject options = doc.to<JsonObject>();
+  // Create the params array
+  JsonArray params = doc.createNestedArray("params");
 
-  // Add the encoding parameter to the options object
+  // Serialize transaction and add it to the params array
+  String transactionSerialized = Base58::trimEncode(transaction.serialize()).c_str();
+  params.add(transactionSerialized);
+
+  // Create options object and add parameters
+  JsonObject options = doc.createNestedObject();
   options["encoding"] = "base58";
-
-  // Add the skipPreflight parameter to the options object
   options["skipPreflight"] = sendOptions.skipPreflight;
-
-  // Add the preflightCommitment parameter to the options object
   options["preflightCommitment"] = to_string(sendOptions.preflightCommitment);
-
-  // Add the maxRetries parameter to the options object
   options["maxRetries"] = sendOptions.maxRetires;
 
-  params.add(Base58::trimEncode(transaction.serialize()).c_str());
-
+  // Add options object to the params array
   params.add(options);
 
   // Create the request payload using createRequestPayload method
@@ -158,12 +156,13 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
     DynamicJsonDocument responseDoc(128); // Adjust capacity as needed
     deserializeJson(responseDoc, response);
 
-    // Extract the blockhash string from the response
+    // Extract the signature string from the response
     const char *signatureString = responseDoc["result"];
 
+    // Decode the signature string using Base58 decoding
     std::vector<uint8_t> signatureBytes = Base58::trimDecode(signatureString);
 
-    // Decode the blockhash string using Base58 decoding
+    // Deserialize the signature
     Signature signature = Signature::deserialize(signatureBytes);
 
     return signature;
