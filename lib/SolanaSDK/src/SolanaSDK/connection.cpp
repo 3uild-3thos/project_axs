@@ -152,6 +152,7 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
   String response;
   if (sendHttpRequest(rpcEndpoint.c_str(), requestPayload, response))
   {
+    Serial.println(response);
     // Parse the JSON response
     DynamicJsonDocument responseDoc(128); // Adjust capacity as needed
     deserializeJson(responseDoc, response);
