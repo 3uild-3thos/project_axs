@@ -357,6 +357,12 @@ std::vector<uint8_t> Message::serialize()
 {
   std::vector<uint8_t> result;
 
+  // Set transaction version byte
+  // Adding support for just versioned transactions
+  const uint8_t firstBit = 128;
+  // TODO: get the transaction version on more standardized way
+  result.push_back(firstBit);
+
   // Serialize header
   result.push_back(header.numRequiredSignatures);
   result.push_back(header.numReadonlySignedAccounts);

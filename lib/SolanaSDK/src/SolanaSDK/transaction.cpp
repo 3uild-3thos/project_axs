@@ -328,12 +328,6 @@ std::vector<uint8_t> Transaction::serialize()
     serializedTransaction.insert(serializedTransaction.end(), serializedSignature.begin(), serializedSignature.end());
   }
 
-  // Set transaction version byte
-  // Adding support for just versioned transactions
-  const uint8_t firstBit = 128;
-  // TODO: get the transaction version on more standardized way
-  serializedTransaction.push_back(firstBit);
-
   // Serialize message
   std::vector<uint8_t> serializedMessage = this->message.serialize();
   serializedTransaction.insert(serializedTransaction.end(), serializedMessage.begin(), serializedMessage.end());
