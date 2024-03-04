@@ -158,10 +158,10 @@ Signature Connection::_sendTransaction(Transaction transaction, SendOptions send
     deserializeJson(responseDoc, response);
 
     // Extract the signature string from the response
-    const char *signatureString = responseDoc["result"];
+    String signatureString = responseDoc["result"];
 
     // Decode the signature string using Base58 decoding
-    std::vector<uint8_t> signatureBytes = Base58::trimDecode(signatureString);
+    std::vector<uint8_t> signatureBytes = Base58::trimDecode(signatureString.c_str());
 
     // Deserialize the signature
     Signature signature = Signature::deserialize(signatureBytes);
