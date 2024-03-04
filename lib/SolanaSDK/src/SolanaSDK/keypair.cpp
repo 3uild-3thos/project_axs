@@ -52,10 +52,6 @@ Keypair Keypair::generate()
         seed[i] = static_cast<unsigned char>(randombytes_random() % 256);
     }
 
-    // Debugging: Print the size of the seed vector
-    Serial.print("Seed size: ");
-    Serial.println(seed.size());
-
     // Ensure that the size of the seed vector matches SECRET_KEY_LEN
     assert(seed.size() == SECRET_KEY_LEN);
 
