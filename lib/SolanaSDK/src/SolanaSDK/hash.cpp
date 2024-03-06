@@ -1,7 +1,7 @@
 #include <atomic>
 #include <sstream>
 #include <iomanip>
-#include "Hash.h"
+#include "hash.h"
 #include "base58.h"
 
 Hash::Hash()
