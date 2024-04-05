@@ -205,9 +205,12 @@ void Transaction::tryPartialSignUnchecked(Signers &keypairs, std::vector<size_t>
 
   std::vector<Signature> signatures = keypairs.signMessage(this->messageData());
 
-  for (int i = 0; i < positions.size(); i++)
+  if (signatures.size() > 0)
   {
-    this->signatures[positions[i]] = signatures[i];
+    for (int i = 0; i < positions.size(); i++)
+    {
+      this->signatures[positions[i]] = signatures[i];
+    }
   }
 }
 
