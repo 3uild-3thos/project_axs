@@ -55,46 +55,46 @@ void PublicKey::sanitize() {}
 
 std::optional<PublicKey> PublicKey::fromString(const std::string &s)
 {
-    std::vector<uint8_t> publicKeyVec;
-    try
+  // Validate length
+  if (s.length() != PUBLIC_KEY_LEN && s.length() != PUBLIC_KEY_MAX_BASE58_LEN)
+  {
+    throw ParsePublickeyError("WrongSize");
+  }
+  
+  std::vector<unsigned char> publicKeyVec;
+  try
+  {
+    // Decode Base58 string
+    std::vector<uint8_t> intVec = Base58::decode(s);
+    
+    // Handle Base58 padding
+    int paddingSize = PUBLIC_KEY_LEN - intVec.size();
+    if (paddingSize > 0)
     {
-        std::vector<uint8_t> intVec;
-        if (s.length() > PUBLIC_KEY_MAX_BASE58_LEN - 1)
-        {
-            // Decode the base58 string with padding
-            intVec = Base58::decode(s);
-        }
-        else if (s.length() == PUBLIC_KEY_LEN)
-        {
-            // Decode the base58 string without padding
-            intVec = Base58::decode(s);
-        }
-        else
-        {
-            throw ParsePublickeyError("Invalid length");
-        }
-
-        publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
+      std::vector<uint8_t> paddedVec(paddingSize, 0);
+      paddedVec.insert(paddedVec.end(), intVec.begin(), intVec.end());
+      intVec = paddedVec;
     }
-    catch (...)
+    else if (paddingSize < 0)
     {
-        throw ParsePublickeyError("Invalid base58 encoding");
-    }
-
-    // If the decoded vector is shorter than the expected length,
-    // pad it with zeros
-    if (publicKeyVec.size() < PUBLIC_KEY_LEN)
-    {
-        publicKeyVec.insert(publicKeyVec.begin(), PUBLIC_KEY_LEN - publicKeyVec.size(), 0);
-    }
-    // If the decoded vector is longer than the expected length,
-    // trim the extra bytes
-    else if (publicKeyVec.size() > PUBLIC_KEY_LEN)
-    {
-        publicKeyVec.erase(publicKeyVec.begin() + PUBLIC_KEY_LEN, publicKeyVec.end());
+      throw ParsePublickeyError("Invalid");
     }
 
-    return PublicKey(publicKeyVec.data());
+    // Convert to unsigned char vector
+    publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
+  }
+  catch (...)
+  {
+    throw ParsePublickeyError("Invalid");
+  }
+  
+  // Validate size
+  if (publicKeyVec.size() != PUBLIC_KEY_LEN)
+  {
+    throw ParsePublickeyError("WrongSize");
+  }
+  
+  return PublicKey(publicKeyVec.data());
 }
 
 
