@@ -59,10 +59,6 @@ public:
 
     static PublicKey deserialize(const std::vector<uint8_t> &data);
 
-    static PublicKey createProgramAddress(
-        const std::vector<u_int8_t> seeds,
-        PublicKey programId);
-
     static PublicKey createProgramAddress(const std::vector<std::vector<uint8_t>> &seeds, const PublicKey &programId);
 
     static std::optional<std::pair<PublicKey, uint8_t>> tryFindProgramAddress(

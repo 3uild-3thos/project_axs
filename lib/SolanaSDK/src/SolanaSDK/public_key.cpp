@@ -55,34 +55,48 @@ void PublicKey::sanitize() {}
 
 std::optional<PublicKey> PublicKey::fromString(const std::string &s)
 {
-  if (s.length() != PUBLIC_KEY_LEN && s.length() != PUBLIC_KEY_MAX_BASE58_LEN)
-  {
-    throw ParsePublickeyError("WrongSize");
-  }
-  std::vector<unsigned char> publicKeyVec;
-  try
-  {
-    std::vector<uint8_t> intVec;
-    if (s.length() == PUBLIC_KEY_MAX_BASE58_LEN)
+    std::vector<uint8_t> publicKeyVec;
+    try
     {
-      intVec = Base58::decode(s);
+        std::vector<uint8_t> intVec;
+        if (s.length() == PUBLIC_KEY_MAX_BASE58_LEN)
+        {
+            // Decode the base58 string with padding
+            intVec = Base58::decode(s);
+        }
+        else if (s.length() == PUBLIC_KEY_LEN)
+        {
+            // Decode the base58 string without padding
+            intVec = Base58::decode(s);
+        }
+        else
+        {
+            throw ParsePublickeyError("Invalid length");
+        }
+
+        publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
     }
-    else
+    catch (...)
     {
-      intVec = Base58::decode(s);
+        throw ParsePublickeyError("Invalid base58 encoding");
     }
-    publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
-  }
-  catch (...)
-  {
-    throw ParsePublickeyError("Invalid");
-  }
-  if (publicKeyVec.size() != PUBLIC_KEY_LEN)
-  {
-    throw ParsePublickeyError("WrongSize");
-  }
-  return PublicKey(publicKeyVec.data());
+
+    // If the decoded vector is shorter than the expected length,
+    // pad it with zeros
+    if (publicKeyVec.size() < PUBLIC_KEY_LEN)
+    {
+        publicKeyVec.insert(publicKeyVec.begin(), PUBLIC_KEY_LEN - publicKeyVec.size(), 0);
+    }
+    // If the decoded vector is longer than the expected length,
+    // trim the extra bytes
+    else if (publicKeyVec.size() > PUBLIC_KEY_LEN)
+    {
+        publicKeyVec.erase(publicKeyVec.begin() + PUBLIC_KEY_LEN, publicKeyVec.end());
+    }
+
+    return PublicKey(publicKeyVec.data());
 }
+
 
 // Serialize method
 std::vector<uint8_t> PublicKey::serialize()
