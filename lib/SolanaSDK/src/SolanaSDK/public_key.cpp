@@ -54,7 +54,7 @@ std::string PublicKey::toBase58()
 void PublicKey::sanitize() {}
 
 std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
-    if (s.length() != PUBLIC_KEY_LEN) {
+    if (s.length() > PUBLIC_KEY_MAX_BASE58_LEN) {
         throw ParsePublickeyError("WrongSize");
     }
 
