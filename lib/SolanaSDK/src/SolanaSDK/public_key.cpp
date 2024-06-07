@@ -56,7 +56,7 @@ void PublicKey::sanitize() {}
 std::optional<PublicKey> PublicKey::fromString(const std::string &s)
 {
   // Validate length
-  if (s.length() != PUBLIC_KEY_LEN && s.length() != PUBLIC_KEY_MAX_BASE58_LEN)
+  if (s.length() != PUBLIC_KEY_LEN && s.length() > PUBLIC_KEY_MAX_BASE58_LEN)
   {
     throw ParsePublickeyError("WrongSize");
   }
@@ -83,14 +83,9 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s)
     // Convert to unsigned char vector
     publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
   }
-  catch (const std::exception& e)
+  catch (...)
   {
-    // throw ParsePublickeyError("Invalid");
-    Serial.print("Unexpected error: ");
-    Serial.println(e.what());
-
-    // Return an empty optional to indicate failure
-    return std::nullopt;
+    throw ParsePublickeyError("Invalid");
   }
   
   // Validate size
