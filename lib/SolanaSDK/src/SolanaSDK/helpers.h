@@ -7,8 +7,8 @@
 class Helpers {
     Helpers();
     public:
-        std::vector<uint8_t> Helpers::buffer_to_hex_uint8_vector(std::vector<uint8_t> buffer);
-        std::vector<uint8_t> Helpers::uint64_to_hex_uint8_vector(uint64_t number);
+        std::vector<uint8_t> buffer_to_hex_uint8_vector(std::vector<uint8_t> buffer);
+        std::vector<uint8_t> uint64_to_hex_uint8_vector(uint64_t number);
 };
 
 

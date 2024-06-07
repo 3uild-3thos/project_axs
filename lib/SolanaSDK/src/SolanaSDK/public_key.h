@@ -6,17 +6,30 @@
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <array>
 #include "base58.h"
 
+// Number of bytes in a pubkey
 const uint8_t PUBLIC_KEY_LEN = 32;
 
+// Maximum string length of a base58 encoded pubkey
 const uint8_t PUBLIC_KEY_MAX_BASE58_LEN = 44;
 
-class ParsePubkeyError : public std::runtime_error
+// Maximum number of seeds
+const size_t MAX_SEEDS = 16;
+
+// maximum length of derived `Pubkey` seed
+const size_t MAX_SEED_LEN = 32;
+
+constexpr uint8_t MAX_BUMP_SEED = 255;
+
+constexpr unsigned char PDA_MARKER[] = "ProgramDerivedAddress";
+
+class ParsePublickeyError : public std::runtime_error
 {
 public:
-    explicit ParsePubkeyError(const std::string &arg) : std::runtime_error(arg) {}
-    explicit ParsePubkeyError(const char *arg) : std::runtime_error(arg) {}
+    explicit ParsePublickeyError(const std::string &arg) : std::runtime_error(arg) {}
+    explicit ParsePublickeyError(const char *arg) : std::runtime_error(arg) {}
 };
 
 class PublicKey
@@ -32,6 +45,8 @@ public:
 
     PublicKey(const std::vector<uint8_t> &value);
 
+    PublicKey(const std::array<uint8_t, PUBLIC_KEY_LEN> &value);
+
     // Convert key to base58
     std::string toBase58();
 
@@ -43,6 +58,20 @@ public:
     std::vector<uint8_t> serialize();
 
     static PublicKey deserialize(const std::vector<uint8_t> &data);
+
+    static PublicKey createProgramAddress(
+        const std::vector<u_int8_t> seeds,
+        PublicKey programId);
+
+    static PublicKey createProgramAddress(const std::vector<std::vector<uint8_t>> &seeds, const PublicKey &programId);
+
+    static std::optional<std::pair<PublicKey, uint8_t>> tryFindProgramAddress(
+        const std::vector<std::vector<uint8_t>> &seeds,
+        const PublicKey &programId);
+
+    static std::pair<PublicKey, uint8_t> findProgramAddress(
+        const std::vector<std::vector<uint8_t>> &seeds,
+        const PublicKey &program_id);
 
     // Less-than operator
     bool operator<(const PublicKey &other) const
