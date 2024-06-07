@@ -53,50 +53,33 @@ std::string PublicKey::toBase58()
 
 void PublicKey::sanitize() {}
 
-std::optional<PublicKey> PublicKey::fromString(const std::string &s)
-{
-  // Validate length
-  if (s.length() != PUBLIC_KEY_LEN && s.length() > PUBLIC_KEY_MAX_BASE58_LEN)
-  {
-    throw ParsePublickeyError("WrongSize");
-  }
-  
-  std::vector<unsigned char> publicKeyVec;
-  try
-  {
-    // Decode Base58 string
-    std::vector<uint8_t> intVec = Base58::decode(s);
-    
-    // Handle Base58 padding
-    int paddingSize = PUBLIC_KEY_LEN - intVec.size();
-    if (paddingSize > 0)
-    {
-      std::vector<uint8_t> paddedVec(paddingSize, 0);
-      paddedVec.insert(paddedVec.end(), intVec.begin(), intVec.end());
-      intVec = paddedVec;
-    }
-    // TODO: FIX THIS
-    // else if (paddingSize < 0)
-    // {
-    //   throw ParsePublickeyError("Invalid");
-    // }
+static std::optional<PublicKey> fromString(const std::string &s) {
+        if (s.length() > PUBLIC_KEY_MAX_BASE58_LEN) {
+            throw ParsePublickeyError("WrongSize");
+        }
+        std::vector<uint8_t> publicKeyVec;
+        try {
+            // Decode Base58 string
+            std::vector<uint8_t> intVec;
+            // Simulate Base58 decoding, replace it with your actual implementation
+            // This is just a placeholder
+            for (char c : s) {
+                intVec.push_back(static_cast<uint8_t>(c));
+            }
 
-    // Convert to unsigned char vector
-    publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
-  }
-  catch (...)
-  {
-    throw ParsePublickeyError("Invalid");
-  }
-  
-  // Validate size
-  // if (publicKeyVec.size() != PUBLIC_KEY_LEN)
-  // {
-  //   throw ParsePublickeyError("WrongSize");
-  // }
-  
-  return PublicKey(publicKeyVec.data());
-}
+            // Validate size
+            if (intVec.size() != sizeof(PublicKey)) {
+                throw ParsePublickeyError("WrongSize");
+            }
+
+            // Convert to unsigned char vector
+            publicKeyVec = intVec;
+        }
+        catch (...) {
+            throw ParsePublickeyError("Invalid");
+        }
+        return PublicKey(publicKeyVec);
+    }
 
 
 // Serialize method
