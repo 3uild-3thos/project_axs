@@ -90,10 +90,10 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s)
   }
   
   // Validate size
-  if (publicKeyVec.size() != PUBLIC_KEY_LEN)
-  {
-    throw ParsePublickeyError("WrongSize");
-  }
+  // if (publicKeyVec.size() != PUBLIC_KEY_LEN)
+  // {
+  //   throw ParsePublickeyError("WrongSize");
+  // }
   
   return PublicKey(publicKeyVec.data());
 }
