@@ -59,7 +59,7 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s)
     try
     {
         std::vector<uint8_t> intVec;
-        if (s.length() == PUBLIC_KEY_MAX_BASE58_LEN)
+        if (s.length() > PUBLIC_KEY_MAX_BASE58_LEN - 1)
         {
             // Decode the base58 string with padding
             intVec = Base58::decode(s);
