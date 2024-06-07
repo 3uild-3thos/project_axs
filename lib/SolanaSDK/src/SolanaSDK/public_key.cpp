@@ -83,9 +83,14 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s)
     // Convert to unsigned char vector
     publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
   }
-  catch (...)
+  catch (const std::exception& e)
   {
-    throw ParsePublickeyError("Invalid");
+    // throw ParsePublickeyError("Invalid");
+    Serial.print("Unexpected error: ");
+    Serial.println(e.what());
+
+    // Return an empty optional to indicate failure
+    return std::nullopt;
   }
   
   // Validate size
