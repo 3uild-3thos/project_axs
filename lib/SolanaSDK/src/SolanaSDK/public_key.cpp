@@ -75,22 +75,18 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s)
       paddedVec.insert(paddedVec.end(), intVec.begin(), intVec.end());
       intVec = paddedVec;
     }
-    else if (paddingSize < 0)
-    {
-      throw ParsePublickeyError("Invalid");
-    }
+    // TODO: FIX THIS
+    // else if (paddingSize < 0)
+    // {
+    //   throw ParsePublickeyError("Invalid");
+    // }
 
     // Convert to unsigned char vector
     publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
   }
-  catch (const std::exception& e)
+  catch (...)
   {
-    // Handle other exceptions if needed
-    Serial.print("Unexpected error: ");
-    Serial.println(e.what());
-
-    // Return an empty optional to indicate failure
-    return std::nullopt;
+    throw ParsePublickeyError("Invalid");
   }
   
   // Validate size
