@@ -124,15 +124,16 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
         Serial.println();
     }
     hasher.hash(programId.key, PUBLIC_KEY_LEN);
+    Serial.print("Program ID: ");
+    for (size_t i = 0; i < PUBLIC_KEY_LEN; ++i) {
+        Serial.print(programId.key[i], HEX);
+        Serial.print(" ");
+    }
+    Serial.println();
     hasher.hash(PDA_MARKER, sizeof(PDA_MARKER) - 1); // Subtract 1 to exclude the null terminator
 
     Hash hashResult;
     hasher.result(&hashResult);
-
-    // Uncomment this line if you want to check if the hash is a valid curve point
-    // if (bytesAreCurvePoint(hashResult.toBytes())) {
-    //     throw ParsePublickeyError("InvalidSeeds");
-    // }
 
     Serial.print("Hash result: ");
     auto hashBytes = hashResult.toBytes();
@@ -141,6 +142,10 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
         Serial.print(" ");
     }
     Serial.println();
+
+    if (bytesAreCurvePoint(hashResult.toBytes())) {
+        throw ParsePublickeyError("InvalidSeeds");
+    }
 
     return PublicKey(hashResult.toBytes());
 }
