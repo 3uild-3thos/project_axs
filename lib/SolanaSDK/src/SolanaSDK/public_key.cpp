@@ -47,22 +47,16 @@ std::string PublicKey::toBase58()
 void PublicKey::sanitize() {}
 
 std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
-    Serial.print("Input string length: ");
-    Serial.println(s.length());
     if (s.length() > PUBLIC_KEY_MAX_BASE58_LEN) {
-        Serial.println("Error: Input string exceeds maximum length.");
         return std::nullopt;
     }
 
     try {
         // Decode Base58 string
         std::vector<uint8_t> intVec = Base58::decode(s);
-        Serial.print("Decoded vector length: ");
-        Serial.println(intVec.size());
 
         // Check the length of the decoded vector
         if (intVec.size() != PUBLIC_KEY_LEN) {
-            Serial.println("Error: Decoded vector length is incorrect.");
             return std::nullopt;
         }
 
@@ -70,11 +64,8 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
         std::vector<unsigned char> publicKeyVec(intVec.begin(), intVec.end());
         return PublicKey(publicKeyVec);
     } catch (const std::exception &e) {
-        Serial.print("Error during decoding: ");
-        Serial.println(e.what());
         return std::nullopt;
     } catch (...) {
-        Serial.println("Unknown error during decoding.");
         return std::nullopt;
     }
 }
@@ -125,6 +116,12 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     Hasher hasher;
     for (const auto &seed : seeds) {
         hasher.hash(seed.data(), seed.size());
+        Serial.print("Seed: ");
+        for (size_t i = 0; i < seed.size(); ++i) {
+            Serial.print(seed[i], HEX);
+            Serial.print(" ");
+        }
+        Serial.println();
     }
     hasher.hash(programId.key, PUBLIC_KEY_LEN);
     hasher.hash(PDA_MARKER, sizeof(PDA_MARKER) - 1); // Subtract 1 to exclude the null terminator
@@ -132,9 +129,18 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     Hash hashResult;
     hasher.result(&hashResult);
 
-    if (bytesAreCurvePoint(hashResult.toBytes())) {
-        throw ParsePublickeyError("InvalidSeeds");
+    // Uncomment this line if you want to check if the hash is a valid curve point
+    // if (bytesAreCurvePoint(hashResult.toBytes())) {
+    //     throw ParsePublickeyError("InvalidSeeds");
+    // }
+
+    Serial.print("Hash result: ");
+    auto hashBytes = hashResult.toBytes();
+    for (size_t i = 0; i < hashBytes.size(); ++i) {
+        Serial.print(hashBytes[i], HEX);
+        Serial.print(" ");
     }
+    Serial.println();
 
     return PublicKey(hashResult.toBytes());
 }
@@ -162,9 +168,15 @@ std::optional<std::pair<PublicKey, uint8_t>> PublicKey::tryFindProgramAddress(
         seeds_with_bump.push_back(bump_seed);
         try {
             PublicKey address = createProgramAddress(seeds_with_bump, programId);
+            Serial.print("Found address: ");
+            Serial.println(address.toBase58().c_str());
+            Serial.print("Bump seed: ");
+            Serial.println(bump_seed[0]);
             return std::make_pair(address, bump_seed[0]);
         } catch (const ParsePublickeyError &e) {
             if (std::string(e.what()) != "InvalidSeeds") {
+                Serial.print("Error: ");
+                Serial.println(e.what());
                 break;
             }
         }
