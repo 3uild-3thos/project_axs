@@ -134,10 +134,14 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     hasher.result(&hashResult);
 
     PublicKey publicKey = PublicKey(hashResult.toBytes());
+
+    Serial.println("HERE");
+    Serial.println(publicKey.toBase58().c_str());
+
     if (isOnCurve(publicKey.toBase58())) {
         throw ParsePublickeyError("InvalidSeeds");
     }
-    
+
     return publicKey;
 }
 
