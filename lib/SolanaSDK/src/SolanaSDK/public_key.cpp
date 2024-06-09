@@ -115,13 +115,18 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
 
     Hasher hasher;
 
-    // Hash each seed
+    std::vector<uint8_t *> vals;
+
+    // Prepare the seeds for hashing
     for (const auto &seed : seeds) {
-        hasher.hash(seed.data(), seed.size());
+        vals.push_back(const_cast<uint8_t*>(seed.data()));
     }
 
-    // Hash the program ID
-    hasher.hash(programId.key, PUBLIC_KEY_LEN);
+    // Prepare the program ID for hashing
+    vals.push_back(const_cast<uint8_t*>(programId.key));
+
+    // Hash the seeds and program ID
+    hasher.hashv(vals);
 
     // Hash the PDA marker
     hasher.hash(PDA_MARKER, sizeof(PDA_MARKER) - 1);
