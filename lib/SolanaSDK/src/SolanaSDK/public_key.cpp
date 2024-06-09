@@ -8,11 +8,7 @@
 #include "crypto.h"
 
 bool bytesAreCurvePoint(const std::array<uint8_t, crypto_core_ed25519_BYTES> &bytes) {
-    if (crypto_core_ed25519_is_valid_point(bytes.data()) != 0) {
-        return true;
-    }
-
-    return false;
+    return crypto_core_ed25519_is_valid_point(bytes.data()) != 0;
 }
 
 PublicKey::PublicKey()
@@ -90,7 +86,6 @@ PublicKey PublicKey::deserialize(const std::vector<uint8_t> &data)
 bool PublicKey::isOnCurve(const std::string &s) {
     std::array<uint8_t, 32U> bytes;
     std::copy(s.begin(), s.end(), bytes.begin());
-    Serial.println(s.size());
     return bytesAreCurvePoint(bytes);
 }
 
