@@ -113,10 +113,11 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
         }
     }
 
-    // Concatenate all seeds, the program ID, and the PDA marker
-    std::vector<uint8_t> concatenatedSeeds;
+    Hasher hasher;
+
+    // Hash each seed
     for (const auto &seed : seeds) {
-        concatenatedSeeds.insert(concatenatedSeeds.end(), seed.begin(), seed.end());
+        hasher.hash(seed.data(), seed.size());
         Serial.print("Seed: ");
         for (size_t i = 0; i < seed.size(); ++i) {
             Serial.print(seed[i], HEX);
@@ -125,7 +126,8 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
         Serial.println();
     }
 
-    concatenatedSeeds.insert(concatenatedSeeds.end(), programId.key, programId.key + PUBLIC_KEY_LEN);
+    // Hash the program ID
+    hasher.hash(programId.key, PUBLIC_KEY_LEN);
     Serial.print("Program ID: ");
     for (size_t i = 0; i < PUBLIC_KEY_LEN; ++i) {
         Serial.print(programId.key[i], HEX);
@@ -133,17 +135,14 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     }
     Serial.println();
 
-    concatenatedSeeds.insert(concatenatedSeeds.end(), PDA_MARKER, PDA_MARKER + sizeof(PDA_MARKER) - 1);
+    // Hash the PDA marker
+    hasher.hash(PDA_MARKER, sizeof(PDA_MARKER) - 1);
     Serial.print("PDA Marker: ");
     for (size_t i = 0; i < sizeof(PDA_MARKER) - 1; ++i) {
         Serial.print(PDA_MARKER[i], HEX);
         Serial.print(" ");
     }
     Serial.println();
-
-    // Hash the concatenated vector
-    Hasher hasher;
-    hasher.hash(concatenatedSeeds.data(), concatenatedSeeds.size());
 
     Hash hashResult;
     hasher.result(&hashResult);
@@ -156,7 +155,6 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     }
     Serial.println();
 
-    // Check if the hash result is a valid curve point
     if (bytesAreCurvePoint(hashResult.toBytes())) {
         throw ParsePublickeyError("InvalidSeeds");
     }
