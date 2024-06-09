@@ -54,7 +54,10 @@ std::string PublicKey::toBase58()
 void PublicKey::sanitize() {}
 
 std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
+    Serial.print("Input string length: ");
+    Serial.println(s.length());
     if (s.length() > PUBLIC_KEY_MAX_BASE58_LEN) {
+        Serial.println("Error: Input string exceeds maximum length.");
         return std::nullopt;
     }
 
@@ -62,16 +65,25 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
     try {
         // Decode Base58 string
         std::vector<uint8_t> intVec = Base58::decode(s);
+        Serial.print("Decoded vector length: ");
+        Serial.println(intVec.size());
 
         // Check the length of the decoded vector
         if (intVec.size() != PUBLIC_KEY_LEN) {
+            Serial.println("Error: Decoded vector length is incorrect.");
             return std::nullopt;
         }
 
         // Convert to unsigned char vector
         publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
     }
+    catch (const std::exception &e) {
+        Serial.print("Error during decoding: ");
+        Serial.println(e.what());
+        return std::nullopt;
+    }
     catch (...) {
+        Serial.println("Unknown error during decoding.");
         return std::nullopt;
     }
 
