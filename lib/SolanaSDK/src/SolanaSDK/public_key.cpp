@@ -5,10 +5,15 @@
 #include "public_key.h"
 #include "base58.h"
 #include "hash.h"
+#include "crypto.h"
 
 bool bytesAreCurvePoint(const std::array<uint8_t, crypto_core_ed25519_BYTES> &bytes) {
-    // Check if the given bytes represent a valid point on the curve
-    if (crypto_core_ed25519_is_valid_point(bytes.data()) != 1) {
+    // Create an array to hold the decompressed point
+    unsigned char decompressed[crypto_core_ed25519_BYTES];
+
+    // Try to decompress the bytes into the decompressed array
+    if (crypto_core_ed25519_from_uniform(decompressed, bytes.data()) != 0) {
+        // If the decompression fails, return false
         return false;
     }
 
@@ -85,6 +90,20 @@ PublicKey PublicKey::deserialize(const std::vector<uint8_t> &data)
   }
 
   return PublicKey(data);
+}
+
+bool PublicKey::isOnCurve(const std::string &s) {
+    if (s.size() != 32) {
+        throw ParsePublickeyError("InvalidSeeds: incorrect length");
+    }
+
+    std::array<uint8_t, 32U> bytes;
+    std::copy(s.begin(), s.end(), bytes.begin());
+
+    if (!bytesAreCurvePoint(bytes)) {
+        throw ParsePublickeyError("InvalidSeeds: not a curve point");
+    }
+    return true;
 }
 
 // Create a valid [program derived address][pda] without searching for a bump seed.

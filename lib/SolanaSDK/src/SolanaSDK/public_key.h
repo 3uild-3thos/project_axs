@@ -69,6 +69,8 @@ public:
         const std::vector<std::vector<uint8_t>> &seeds,
         const PublicKey &program_id);
 
+    static bool isOnCurve(const std::string &s);
+
     // Less-than operator
     bool operator<(const PublicKey &other) const
     {
