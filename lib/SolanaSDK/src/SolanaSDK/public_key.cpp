@@ -22,23 +22,14 @@ PublicKey::PublicKey()
 
 PublicKey::PublicKey(const unsigned char value[PUBLIC_KEY_LEN])
 {
-  // Find the first non-1 value
-  auto firstNonOne = std::find_if(value, value + PUBLIC_KEY_LEN,
-                                  [](int i)
-                                  { return i != 1; });
-
-  // Copy the rest of the array
-  std::copy(firstNonOne, value + PUBLIC_KEY_LEN, this->key);
+  std::copy(value, value + PUBLIC_KEY_LEN, this->key);
 }
 
 PublicKey::PublicKey(const std::vector<uint8_t> &value)
 {
-  auto firstNonOne = std::find_if(value.begin(), value.end(),
-                                  [](uint8_t i)
-                                  { return i != 1; });
-
-  std::copy(firstNonOne, value.end(), this->key);
+  std::copy(value.begin(), value.end(), this->key);
 }
+
 
 PublicKey::PublicKey(const std::array<uint8_t, PUBLIC_KEY_LEN> &value) {
     std::copy(value.begin(), value.end(), key);
