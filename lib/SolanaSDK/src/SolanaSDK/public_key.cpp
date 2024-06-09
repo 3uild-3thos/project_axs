@@ -112,13 +112,11 @@ std::optional<PublicKey> PublicKey::createProgramAddress(const std::vector<std::
     Hash hashResult;
     hasher.result(&hashResult);
 
-    PublicKey publicKey = PublicKey(hashResult.toBytes());
-
-    if (isOnCurve(publicKey.toBase58()) == 1) {
+    if (bytesAreCurvePoint(hashResult.toBytes())) {
         return std::nullopt;
     }
 
-    return publicKey;
+    return PublicKey(hashResult.toBytes());
 }
 
 // Find a valid [program derived address][pda] and its corresponding bump seed.
@@ -133,9 +131,9 @@ std::optional<std::pair<PublicKey, uint8_t>> PublicKey::tryFindProgramAddress(co
       if (address.has_value())
       {
         return std::make_pair(address.value(), bump_seed[0]);
-        } else {
-            continue;
-        }
+      } else {
+          continue;
+      }
         bump_seed[0] -= 1;
     }
     return std::nullopt;
