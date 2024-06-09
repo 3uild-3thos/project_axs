@@ -138,7 +138,7 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     Serial.println("HERE");
     Serial.println(publicKey.toBase58().c_str());
 
-    if (isOnCurve(publicKey.toBase58())) {
+    if (!isOnCurve(publicKey.toBase58())) {
         throw ParsePublickeyError("InvalidSeeds");
     }
 
