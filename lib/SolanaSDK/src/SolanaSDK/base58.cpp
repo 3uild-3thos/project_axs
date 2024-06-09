@@ -40,6 +40,14 @@ std::string Base58::encode(const std::vector<uint8_t> &input)
 
 std::vector<uint8_t> Base58::decode(const std::string &addr)
 {
+     int leading_zeros = 0;
+    for (const auto &ch : addr)
+    {
+        if (ch == '1') ++leading_zeros;
+        else break;
+    }
+    
+    // Decode the input string
     std::vector<uint8_t> buf((addr.size() * 733) / 1000 + 1); // log(58) / log(256), rounded up
     std::fill(buf.begin(), buf.end(), 0);
     
@@ -61,15 +69,13 @@ std::vector<uint8_t> Base58::decode(const std::string &addr)
         }
     }
 
-    // Skip leading zeroes in the buffer if not all zeros
+    // Skip leading zeroes in the buffer
     auto start = std::find_if(buf.begin(), buf.end(), [](int i) { return i != 0; });
 
-    if (start == buf.end()) {
-        // All elements are zeros
-        return std::vector<uint8_t>(1, 0);
-    }
+    // Add the counted leading zeros to the result
+    std::vector<uint8_t> decoded(leading_zeros, 0);
+    decoded.insert(decoded.end(), start, buf.end());
 
-    std::vector<uint8_t> decoded(start, buf.end());
     return decoded;
 }
 
