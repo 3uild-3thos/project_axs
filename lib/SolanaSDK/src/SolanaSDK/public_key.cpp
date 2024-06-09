@@ -8,16 +8,11 @@
 #include "crypto.h"
 
 bool bytesAreCurvePoint(const std::array<uint8_t, crypto_core_ed25519_BYTES> &bytes) {
-    // Create an array to hold the decompressed point
-    unsigned char decompressed[crypto_core_ed25519_BYTES];
-
-    // Try to decompress the bytes into the decompressed array
-    if (crypto_core_ed25519_from_uniform(decompressed, bytes.data()) != 0) {
-        // If the decompression fails, return false
-        return false;
+    if (crypto_core_ed25519_is_valid_point(bytes.data()) != 0) {
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 PublicKey::PublicKey()
