@@ -6,14 +6,17 @@
 #include "base58.h"
 #include "hash.h"
 
-bool bytesAreCurvePoint(const std::array<uint8_t, HASH_BYTES> &bytes) {
+bool bytesAreCurvePoint(const std::array<uint8_t, crypto_core_ed25519_BYTES> &bytes) {
+    // Use the bytes as a compressed point
     unsigned char decompressed_point[crypto_core_ed25519_BYTES];
-    if (crypto_core_ed25519_from_uniform(decompressed_point, bytes.data()) != 0) {
+
+    // Check if the decompressed point is on the curve
+    if (crypto_core_ed25519_is_valid_point(decompressed_point) != 1) {
         return false;
     }
+
     return true;
 }
-
 PublicKey::PublicKey()
 {
   std::fill(key, key + PUBLIC_KEY_LEN, 0);
