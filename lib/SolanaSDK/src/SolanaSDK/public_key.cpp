@@ -55,7 +55,7 @@ void PublicKey::sanitize() {}
 
 std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
     if (s.length() > PUBLIC_KEY_MAX_BASE58_LEN) {
-        throw ParsePublickeyError("WrongSize");
+        return std::nullopt;
     }
 
     std::vector<unsigned char> publicKeyVec;
@@ -63,12 +63,18 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
         // Decode Base58 string
         std::vector<uint8_t> intVec = Base58::decode(s);
 
+        // Check the length of the decoded vector
+        if (intVec.size() != PUBLIC_KEY_LEN) {
+            return std::nullopt;
+        }
+
         // Convert to unsigned char vector
         publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
     }
     catch (...) {
-        throw ParsePublickeyError("Invalid");
+        return std::nullopt;
     }
+
     return PublicKey(publicKeyVec.data());
 }
 
