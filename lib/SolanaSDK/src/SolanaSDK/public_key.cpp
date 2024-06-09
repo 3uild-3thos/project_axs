@@ -114,8 +114,11 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     }
 
     Hasher hasher;
+
+    // Concatenate all seeds into a single vector
+    std::vector<uint8_t> concatenatedSeeds;
     for (const auto &seed : seeds) {
-        hasher.hash(seed.data(), seed.size());
+        concatenatedSeeds.insert(concatenatedSeeds.end(), seed.begin(), seed.end());
         Serial.print("Seed: ");
         for (size_t i = 0; i < seed.size(); ++i) {
             Serial.print(seed[i], HEX);
@@ -123,14 +126,21 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
         }
         Serial.println();
     }
-    hasher.hash(programId.key, PUBLIC_KEY_LEN);
+
+    // Add program ID to the concatenated seeds
+    concatenatedSeeds.insert(concatenatedSeeds.end(), programId.key, programId.key + PUBLIC_KEY_LEN);
     Serial.print("Program ID: ");
     for (size_t i = 0; i < PUBLIC_KEY_LEN; ++i) {
         Serial.print(programId.key[i], HEX);
         Serial.print(" ");
     }
     Serial.println();
-    hasher.hash(PDA_MARKER, sizeof(PDA_MARKER) - 1); // Subtract 1 to exclude the null terminator
+
+    // Add PDA marker
+    concatenatedSeeds.insert(concatenatedSeeds.end(), PDA_MARKER, PDA_MARKER + sizeof(PDA_MARKER) - 1);
+
+    // Hash the concatenated seeds
+    hasher.hash(concatenatedSeeds.data(), concatenatedSeeds.size());
 
     Hash hashResult;
     hasher.result(&hashResult);
@@ -149,6 +159,7 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
 
     return PublicKey(hashResult.toBytes());
 }
+
 
 // Find a valid [program derived address][pda] and its corresponding bump seed.
 //
