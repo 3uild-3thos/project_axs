@@ -95,10 +95,7 @@ bool PublicKey::isOnCurve(const std::string &s) {
     std::array<uint8_t, 32U> bytes;
     std::copy(s.begin(), s.end(), bytes.begin());
 
-    if (!bytesAreCurvePoint(bytes)) {
-        throw ParsePublickeyError("InvalidSeeds: not a curve point");
-    }
-    return true;
+    return bytesAreCurvePoint(bytes);
 }
 
 // Create a valid [program derived address][pda] without searching for a bump seed.
