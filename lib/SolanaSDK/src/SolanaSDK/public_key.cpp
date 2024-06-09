@@ -88,13 +88,8 @@ PublicKey PublicKey::deserialize(const std::vector<uint8_t> &data)
 }
 
 bool PublicKey::isOnCurve(const std::string &s) {
-    if (s.size() != 32) {
-        throw ParsePublickeyError("InvalidSeeds: incorrect length");
-    }
-
     std::array<uint8_t, 32U> bytes;
     std::copy(s.begin(), s.end(), bytes.begin());
-
     return bytesAreCurvePoint(bytes);
 }
 
