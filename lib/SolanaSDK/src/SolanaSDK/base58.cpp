@@ -40,19 +40,32 @@ std::string Base58::encode(const std::vector<uint8_t> &input)
 
 std::vector<uint8_t> Base58::decode(const std::string &addr)
 {
-    std::vector<uint8_t> buf(addr.size(), 0);
-    int c, tmp;
+    std::vector<uint8_t> buf((addr.size() * 733) / 1000 + 1); // log(58) / log(256), rounded up
+    std::fill(buf.begin(), buf.end(), 0);
+    
     for (const auto &a : addr)
     {
-        c = ALPHABET.find(a);
+        int c = ALPHABET.find(a);
+        if (c == std::string::npos)
+        {
+            // Invalid character found in the input string
+            return {};
+        }
+
+        int carry = c;
         for (int j = buf.size() - 1; j >= 0; --j)
         {
-            tmp = buf[j] * 58 + c;
-            c = (tmp & (~0xff)) >> 8;
-            buf[j] = tmp & 0xff;
+            carry += 58 * buf[j];
+            buf[j] = carry % 256;
+            carry /= 256;
         }
     }
-    return buf;
+
+    // Skip leading zeroes in the buffer
+    auto start = std::find_if(buf.begin(), buf.end(), [](int i) { return i != 0; });
+
+    std::vector<uint8_t> decoded(start, buf.end());
+    return decoded;
 }
 
 std::string Base58::trimEncode(const std::vector<uint8_t> &input)
