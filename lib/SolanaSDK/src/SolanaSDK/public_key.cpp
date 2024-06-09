@@ -133,14 +133,13 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     Hash hashResult;
     hasher.result(&hashResult);
 
-    if (bytesAreCurvePoint(hashResult.toBytes())) {
+    PublicKey publicKey = PublicKey(hashResult.toBytes());
+    if (isOnCurve(publicKey.toBase58())) {
         throw ParsePublickeyError("InvalidSeeds");
     }
-
-    return PublicKey(hashResult.toBytes());
+    
+    return publicKey;
 }
-
-
 
 // Find a valid [program derived address][pda] and its corresponding bump seed.
 //
