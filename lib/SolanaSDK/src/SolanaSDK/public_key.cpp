@@ -133,8 +133,8 @@ std::optional<std::pair<PublicKey, uint8_t>> PublicKey::tryFindProgramAddress(co
         Serial.println("HERE");
         return std::make_pair(address.value(), bump_seed[0]);
       } else {
-        Serial.println("CONTINUE");
-          continue;
+        Serial.println("BREAK");
+          break;
       }
         bump_seed[0] -= 1;
     }
