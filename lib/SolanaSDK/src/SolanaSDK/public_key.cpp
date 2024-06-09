@@ -7,16 +7,14 @@
 #include "hash.h"
 
 bool bytesAreCurvePoint(const std::array<uint8_t, crypto_core_ed25519_BYTES> &bytes) {
-    // Use the bytes as a compressed point
-    unsigned char decompressed_point[crypto_core_ed25519_BYTES];
-
-    // Check if the decompressed point is on the curve
-    if (crypto_core_ed25519_is_valid_point(decompressed_point) != 1) {
+    // Check if the given bytes represent a valid point on the curve
+    if (crypto_core_ed25519_is_valid_point(bytes.data()) != 1) {
         return false;
     }
 
     return true;
 }
+
 PublicKey::PublicKey()
 {
   std::fill(key, key + PUBLIC_KEY_LEN, 0);
@@ -154,13 +152,11 @@ std::optional<std::pair<PublicKey, uint8_t>> PublicKey::tryFindProgramAddress(
     std::vector<uint8_t> bump_seed(1, MAX_BUMP_SEED);
 
     for (uint8_t i = MAX_BUMP_SEED; i > 0; --i) {
-      Serial.println(bump_seed[0]);
-      std::vector<std::vector<uint8_t>> seeds_with_bump = seeds;
-      seeds_with_bump.push_back(bump_seed);
-      try
-      {
-        PublicKey address = createProgramAddress(seeds_with_bump, programId);
-        return std::make_pair(address, bump_seed[0]);
+        std::vector<std::vector<uint8_t>> seeds_with_bump = seeds;
+        seeds_with_bump.push_back(bump_seed);
+        try {
+            PublicKey address = createProgramAddress(seeds_with_bump, programId);
+            return std::make_pair(address, bump_seed[0]);
         } catch (const ParsePublickeyError &e) {
             if (std::string(e.what()) != "InvalidSeeds") {
                 break;
