@@ -68,6 +68,10 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
         Serial.print("Decoded vector length: ");
         Serial.println(intVec.size());
 
+        // Prepend leading zeros if necessary to make the vector 32 bytes long
+        std::vector<uint8_t> publicKeyVec(PUBLIC_KEY_LEN - intVec.size(), 0);
+        publicKeyVec.insert(publicKeyVec.end(), intVec.begin(), intVec.end());
+
         // Check the length of the decoded vector
         if (intVec.size() != PUBLIC_KEY_LEN) {
             Serial.println("Error: Decoded vector length is incorrect.");
