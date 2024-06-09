@@ -118,42 +118,16 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     // Hash each seed
     for (const auto &seed : seeds) {
         hasher.hash(seed.data(), seed.size());
-        Serial.print("Seed: ");
-        for (size_t i = 0; i < seed.size(); ++i) {
-            Serial.print(seed[i], HEX);
-            Serial.print(" ");
-        }
-        Serial.println();
     }
 
     // Hash the program ID
     hasher.hash(programId.key, PUBLIC_KEY_LEN);
-    Serial.print("Program ID: ");
-    for (size_t i = 0; i < PUBLIC_KEY_LEN; ++i) {
-        Serial.print(programId.key[i], HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
 
     // Hash the PDA marker
     hasher.hash(PDA_MARKER, sizeof(PDA_MARKER) - 1);
-    Serial.print("PDA Marker: ");
-    for (size_t i = 0; i < sizeof(PDA_MARKER) - 1; ++i) {
-        Serial.print(PDA_MARKER[i], HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
 
     Hash hashResult;
     hasher.result(&hashResult);
-
-    Serial.print("Hash result: ");
-    auto hashBytes = hashResult.toBytes();
-    for (size_t i = 0; i < hashBytes.size(); ++i) {
-        Serial.print(hashBytes[i], HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
 
     if (bytesAreCurvePoint(hashResult.toBytes())) {
         throw ParsePublickeyError("InvalidSeeds");
@@ -161,6 +135,7 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
 
     return PublicKey(hashResult.toBytes());
 }
+
 
 
 // Find a valid [program derived address][pda] and its corresponding bump seed.
@@ -179,26 +154,19 @@ std::optional<std::pair<PublicKey, uint8_t>> PublicKey::tryFindProgramAddress(
     const std::vector<std::vector<uint8_t>> &seeds, 
     const PublicKey &programId) {
 
-    std::vector<std::vector<uint8_t>> seeds_with_bump = seeds;
     std::vector<uint8_t> bump_seed(1, MAX_BUMP_SEED);
 
     for (uint8_t i = MAX_BUMP_SEED; i > 0; --i) {
+        std::vector<std::vector<uint8_t>> seeds_with_bump = seeds;
         seeds_with_bump.push_back(bump_seed);
         try {
             PublicKey address = createProgramAddress(seeds_with_bump, programId);
-            Serial.print("Found address: ");
-            Serial.println(address.toBase58().c_str());
-            Serial.print("Bump seed: ");
-            Serial.println(bump_seed[0]);
             return std::make_pair(address, bump_seed[0]);
         } catch (const ParsePublickeyError &e) {
             if (std::string(e.what()) != "InvalidSeeds") {
-                Serial.print("Error: ");
-                Serial.println(e.what());
                 break;
             }
         }
-        seeds_with_bump.pop_back();
         bump_seed[0] -= 1;
     }
     return std::nullopt;
