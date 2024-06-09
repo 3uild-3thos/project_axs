@@ -61,8 +61,13 @@ std::vector<uint8_t> Base58::decode(const std::string &addr)
         }
     }
 
-    // Skip leading zeroes in the buffer
+    // Skip leading zeroes in the buffer if not all zeros
     auto start = std::find_if(buf.begin(), buf.end(), [](int i) { return i != 0; });
+
+    if (start == buf.end()) {
+        // All elements are zeros
+        return std::vector<uint8_t>(1, 0);
+    }
 
     std::vector<uint8_t> decoded(start, buf.end());
     return decoded;
