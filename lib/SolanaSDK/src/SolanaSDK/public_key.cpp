@@ -112,7 +112,7 @@ std::optional<PublicKey> PublicKey::createProgramAddress(const std::vector<std::
     Hash hashResult;
     hasher.result(&hashResult);
 
-    if (bytesAreCurvePoint(hashResult.toBytes())) {
+    if (!bytesAreCurvePoint(hashResult.toBytes())) {
         return std::nullopt;
     }
 
