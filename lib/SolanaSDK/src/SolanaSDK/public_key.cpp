@@ -154,11 +154,13 @@ std::optional<std::pair<PublicKey, uint8_t>> PublicKey::tryFindProgramAddress(
     std::vector<uint8_t> bump_seed(1, MAX_BUMP_SEED);
 
     for (uint8_t i = MAX_BUMP_SEED; i > 0; --i) {
-        std::vector<std::vector<uint8_t>> seeds_with_bump = seeds;
-        seeds_with_bump.push_back(bump_seed);
-        try {
-            PublicKey address = createProgramAddress(seeds_with_bump, programId);
-            return std::make_pair(address, bump_seed[0]);
+      Serial.println(bump_seed[0]);
+      std::vector<std::vector<uint8_t>> seeds_with_bump = seeds;
+      seeds_with_bump.push_back(bump_seed);
+      try
+      {
+        PublicKey address = createProgramAddress(seeds_with_bump, programId);
+        return std::make_pair(address, bump_seed[0]);
         } catch (const ParsePublickeyError &e) {
             if (std::string(e.what()) != "InvalidSeeds") {
                 break;
