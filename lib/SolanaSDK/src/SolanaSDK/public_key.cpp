@@ -64,7 +64,7 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
     std::vector<unsigned char> publicKeyVec;
     try {
         // Decode Base58 string
-        std::vector<uint8_t> intVec = Base58::decode(s);
+        std::vector<uint8_t> intVec = Base58::trimDecode(s);
         Serial.print("Decoded vector length: ");
         Serial.println(intVec.size());
 
