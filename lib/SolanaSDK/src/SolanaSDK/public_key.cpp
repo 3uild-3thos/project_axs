@@ -114,7 +114,7 @@ std::optional<PublicKey> PublicKey::createProgramAddress(const std::vector<std::
 
     PublicKey publicKey = PublicKey(hashResult.toBytes());
 
-    if (isOnCurve(publicKey.toBase58()) == 0) {
+    if (isOnCurve(publicKey.toBase58()) == 1) {
         return std::nullopt;
     }
 
@@ -132,7 +132,7 @@ std::optional<std::pair<PublicKey, uint8_t>> PublicKey::tryFindProgramAddress(co
         if (address.has_value()) {
             return std::make_pair(address.value(), bump_seed[0]);
         } else {
-            break;
+            continue;
         }
         bump_seed[0] -= 1;
     }
