@@ -84,10 +84,17 @@ PublicKey PublicKey::deserialize(const std::vector<uint8_t> &data)
 }
 
 bool PublicKey::isOnCurve(const std::string &s) {
-    std::array<uint8_t, 32U> bytes;
-    std::copy(s.begin(), s.end(), bytes.begin());
-    return bytesAreCurvePoint(bytes);
+    std::optional<PublicKey> publicKey = fromString(s);
+
+    if (publicKey.has_value()) {
+        std::array<uint8_t, crypto_core_ed25519_BYTES> keyArray;
+        std::copy(publicKey->key, publicKey->key + PUBLIC_KEY_LEN, keyArray.begin());
+        return bytesAreCurvePoint(keyArray);
+    } else {
+        return false;
+    }
 }
+
 
 // Create a valid [program derived address][pda] without searching for a bump seed.
 //
