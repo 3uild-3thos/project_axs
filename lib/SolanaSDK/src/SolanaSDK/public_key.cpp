@@ -11,7 +11,6 @@ bool bytesAreCurvePoint(const std::array<uint8_t, HASH_BYTES> &bytes) {
     if (crypto_core_ed25519_from_uniform(decompressed_point, bytes.data()) != 0) {
         return false;
     }
-    crypto_core_ed25519_from_uniform(decompressed_point, bytes.data());
     return true;
 }
 
@@ -30,7 +29,6 @@ PublicKey::PublicKey(const std::vector<uint8_t> &value)
   std::copy(value.begin(), value.end(), this->key);
 }
 
-
 PublicKey::PublicKey(const std::array<uint8_t, PUBLIC_KEY_LEN> &value) {
     std::copy(value.begin(), value.end(), key);
 }
@@ -38,7 +36,11 @@ PublicKey::PublicKey(const std::array<uint8_t, PUBLIC_KEY_LEN> &value) {
 std::string PublicKey::toBase58()
 {
   std::vector<uint8_t> keyVector(this->key, this->key + PUBLIC_KEY_LEN);
-  // TODO: wrong size check this
+  // Ensure the vector has the correct size
+  if (keyVector.size() != PUBLIC_KEY_LEN) {
+    Serial.println("Error: Key vector size is incorrect.");
+    return "";
+  }
   return Base58::trimEncode(keyVector);
 }
 
@@ -59,10 +61,6 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
         Serial.print("Decoded vector length: ");
         Serial.println(intVec.size());
 
-        // Prepend leading zeros if necessary to make the vector 32 bytes long
-        std::vector<uint8_t> publicKeyVec(PUBLIC_KEY_LEN - intVec.size(), 0);
-        publicKeyVec.insert(publicKeyVec.end(), intVec.begin(), intVec.end());
-
         // Check the length of the decoded vector
         if (intVec.size() != PUBLIC_KEY_LEN) {
             Serial.println("Error: Decoded vector length is incorrect.");
@@ -82,31 +80,23 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
         return std::nullopt;
     }
 
-    return PublicKey(publicKeyVec.data());
+    return PublicKey(publicKeyVec);
 }
-
 
 // Serialize method
 std::vector<uint8_t> PublicKey::serialize()
 {
-  std::vector<uint8_t> vec;
-  vec.insert(vec.end(), this->key, this->key + PUBLIC_KEY_LEN);
-  return vec;
+  return std::vector<uint8_t>(this->key, this->key + PUBLIC_KEY_LEN);
 }
 
 // Deserialize method
 PublicKey PublicKey::deserialize(const std::vector<uint8_t> &data)
 {
-  std::string str(data.begin(), data.end());
-  auto publicKeyOpt = PublicKey::fromString(str);
-  if (publicKeyOpt.has_value())
-  {
-    return publicKeyOpt.value();
+  if (data.size() != PUBLIC_KEY_LEN) {
+    throw ParsePublickeyError("Invalid public key length");
   }
-  else
-  {
-    throw ParsePublickeyError("Invalid");
-  }
+
+  return PublicKey(data);
 }
 
 // Create a valid [program derived address][pda] without searching for a bump seed.
@@ -136,7 +126,7 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
         }
     }
 
-     Hasher hasher;
+    Hasher hasher;
     for (const auto &seed : seeds) {
         hasher.hash(seed.data(), seed.size());
     }
@@ -146,9 +136,9 @@ PublicKey PublicKey::createProgramAddress(const std::vector<std::vector<uint8_t>
     Hash hashResult;
     hasher.result(&hashResult);
 
-    // if (bytesAreCurvePoint(hashResult.toBytes())) {
-    //     throw ParsePublickeyError("InvalidSeeds");
-    // }
+    if (bytesAreCurvePoint(hashResult.toBytes())) {
+        throw ParsePublickeyError("InvalidSeeds");
+    }
 
     return PublicKey(hashResult.toBytes());
 }
