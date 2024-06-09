@@ -54,7 +54,6 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
         return std::nullopt;
     }
 
-    std::vector<unsigned char> publicKeyVec;
     try {
         // Decode Base58 string
         std::vector<uint8_t> intVec = Base58::decode(s);
@@ -68,19 +67,16 @@ std::optional<PublicKey> PublicKey::fromString(const std::string &s) {
         }
 
         // Convert to unsigned char vector
-        publicKeyVec = std::vector<unsigned char>(intVec.begin(), intVec.end());
-    }
-    catch (const std::exception &e) {
+        std::vector<unsigned char> publicKeyVec(intVec.begin(), intVec.end());
+        return PublicKey(publicKeyVec);
+    } catch (const std::exception &e) {
         Serial.print("Error during decoding: ");
         Serial.println(e.what());
         return std::nullopt;
-    }
-    catch (...) {
+    } catch (...) {
         Serial.println("Unknown error during decoding.");
         return std::nullopt;
     }
-
-    return PublicKey(publicKeyVec);
 }
 
 // Serialize method
